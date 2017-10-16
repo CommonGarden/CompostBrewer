@@ -5,7 +5,6 @@ const url = require('url');
 const raspio = require('raspi-io');
 const five = require('johnny-five');
 const later = require('later');
-const Hs100Api = require('hs100-api');
 const _ = require('underscore');
 const fs = require('fs');
 const spawn = require('child_process').spawn;
@@ -14,7 +13,8 @@ const spawn = require('child_process').spawn;
 later.date.localTime();
 
 // Declare variables
-let pH_reading,
+let bioreactor,
+  pH_reading,
   eC_reading,
   DO_reading,
   emit_data,
@@ -64,7 +64,7 @@ setTimeout(()=> {
 
   // When board emits a 'ready' event run this start function.
   board.on('ready', function start() {
-    let bioreactor = new Grow({
+    bioreactor = new Grow({
       uuid: 'meow',
       token: 'meow',
       component: 'BioReactor',
@@ -337,12 +337,12 @@ setTimeout(()=> {
       });
     }, 2000)
   });
-}, 3000);
 
-board.on('exit', ()=> {
-  console.log('Turning things off.');
-  bioreactor.call('airlift_off');
-  bioreactor.call('aerator_off');
-  bioreactor.call('heater_off');
-  bioreactor.call('water_pump_off');
-});
+  board.on('exit', ()=> {
+    console.log('Turning things off.');
+    bioreactor.call('airlift_off');
+    bioreactor.call('aerator_off');
+    bioreactor.call('heater_off');
+    bioreactor.call('water_pump_off');
+  });
+}, 3000);
