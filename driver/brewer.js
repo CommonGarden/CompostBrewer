@@ -67,7 +67,7 @@ setTimeout(()=> {
     bioreactor = new Grow({
       uuid: 'meow',
       token: 'meow',
-      component: 'BioReactor',
+      component: 'CompostBrewer',
       properties: {
         light_state: null,
         heater: 'off',//1
@@ -143,10 +143,9 @@ setTimeout(()=> {
           this.aerator_off();
           this.heater_off();
           this.water_pump_off();
-
-          multi = new five.Multi({
-            controller: 'BME280'
-          });
+          // multi = new five.Multi({
+          //   controller: 'BME280'
+          // });
 
           // // Uncomment to enable light sensor.
           // let lux = new five.Light({
@@ -157,11 +156,30 @@ setTimeout(()=> {
         var interval = this.get('interval');
 
         emit_data = setInterval(()=> {
-          this.temp_data();
-          this.hum_data();
-          this.light_data();
+          let py = spawn('python', ['max31865.py']);
+
+          py.stdout.on('data', (data)=> {
+            console.log("Water temperature: " + data.toString());
+            this.emit('water_temperature', Number(data.toString()));
+          });
+
+          let am2320 = spawn('python', ['am2320.py']);
+
+          am2320.stdout.on('data', (data)=> {
+            let readings = data.toString().split(' ');
+            let temperature = Number(readings[0]);
+            let humidity = Number(readings[1].replace(/(\r\n|\n|\r)/gm,""));
+            console.log('Temperature: ' + temperature);
+            console.log('Humidity: ' + humidity)
+            this.emit('temperature', temperature);
+            this.emit('humidity', humidity);
+          });
+
+          // this.temp_data();
+          // this.hum_data();
+          // this.light_data();
           this.water_pump_on();
-          this.air_pressure_data();
+          // this.air_pressure_data();
           this.water_level_data();
           setTimeout(()=> {
             this.ph_data();
