@@ -8,6 +8,7 @@ const later = require('later');
 const _ = require('underscore');
 const fs = require('fs');
 const spawn = require('child_process').spawn;
+const tempValue = require('rpi-temperature');
 
 // Use local time, not UTC.
 later.date.localTime();
@@ -156,12 +157,16 @@ setTimeout(()=> {
         var interval = this.get('interval');
 
         emit_data = setInterval(()=> {
-          let py = spawn('python', ['max31865.py']);
+          // let py = spawn('python', ['max31865.py']);
 
-          py.stdout.on('data', (data)=> {
-            console.log("Water temperature: " + data.toString());
-            this.emit('water_temperature', Number(data.toString()));
-          });
+          // py.stdout.on('data', (data)=> {
+          //   console.log("Water temperature: " + data.toString());
+          //   this.emit('water_temperature', Number(data.toString()));
+          // });
+
+          let temp = tempValue.getTemperature();
+          console.log('Temperature: %s C', temp);
+          this.emit('water_temperature', Number(temp));
 
           let am2320 = spawn('python', ['am2320.py']);
 
